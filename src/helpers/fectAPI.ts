@@ -1,3 +1,4 @@
+import { handleRefreshToken } from "../Auth/RefreshToken";
 import { Post } from "../interface/posts";
 
 export const getPosts = async (url: string): Promise<Post[]> => {
@@ -39,3 +40,26 @@ export const createPost = async (url: string, postData: Post): Promise<Post> => 
     throw error;
   }
 };
+
+
+export const fetchProtectedResource: unknown = async () => {
+    const token = localStorage.getItem('token');
+  
+    const response = await fetch('https://localhost:7128/api/protected-endpoint', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  
+    if (response.status === 401) {
+      // Si el token ha expirado, intentar refrescarlo
+      await handleRefreshToken();
+      // Reintentar la solicitud original
+      return fetchProtectedResource();
+    }
+  
+    const data = await response.json();
+    console.log('Protected data:', data);
+  };
+  

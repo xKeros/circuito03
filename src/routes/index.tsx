@@ -3,6 +3,7 @@ import App from "../App";
 import NotFound from "../components/static/NotFound";
 import NewPost from "../components/static/NewPostForm";
 import PostsComponent from "../pages/PostsPage";
+import Login from "../components/Users/Login";
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
       {
         path: "*",
         element: <NotFound />, // Contenido para rutas no encontradas
+      },
+      {
+        path: "/login",
+        element: <Login />, // Contenido para rutas no encontradas
       },
     ],
   },

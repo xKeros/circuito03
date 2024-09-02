@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -10,66 +10,76 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
+import { useCookies } from 'react-cookie';
+import { uploadImages } from "../../helpers/imageUploadHelper";
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [authorId, setAuthorId] = useState("");
-  const [timestamp, setTimestamp] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [cookies, setCookie, removeCookie] = useCookies(['userId']);
+
+  // Obtener el authorId de las cookies cuando se monta el componente
+  useEffect(() => {
+    const myCookie = cookies.userId
+    console.log(myCookie)
+    if (myCookie) {
+      setAuthorId(myCookie);
+    }
+  }, [cookies.userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    // Crear un FormData para la solicitud
-    const formData = new FormData();
-    
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('authorId', authorId);
-    formData.append('timestamp', timestamp);
-  
-    images.map((image, index) => formData.append(`image_${index + 1}`, image));
 
-  
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+
+    const savedImagePaths = await uploadImages(images);
+
+    const postData = {
+      title,
+      content,
+      authorId, // Usar el authorId que viene de la cookie
+      timestamp: currentTimestamp,
+      images: savedImagePaths,
+    };
+
     try {
-      console.log(formData);
-      // Enviar las imágenes al backend para procesarlas
-      const response = await fetch('https://localhost:7128/api/images/upload', {
-        method: 'POST',
-        body: formData,
+      const response = await fetch("https://localhost:7128/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Post Data with Saved Images:', data);
-  
-        // Aquí puedes utilizar las rutas de las imágenes procesadas (data.OptimizedImagePath)
+        console.log("Post created with images:", data);
       } else {
-        console.error('Failed to upload images');
+        console.error("Failed to create post");
       }
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error("Error creating post:", error);
     }
   };
-  
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      console.log('Selected files:', newFiles); // Verifica que los archivos seleccionados se están agregando al estado
-      setImages(newFiles); // Actualiza el estado con los nuevos archivos
-  
+      setImages((prevImages) => [...prevImages, ...newFiles]);
+
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-      setImagePreviews(newPreviews);
+      setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
     }
   };
-  
 
   const handleRemoveImage = (index: number) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    setImagePreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
+    setImagePreviews((prevPreviews) =>
+      prevPreviews.filter((_, i) => i !== index)
+    );
   };
 
   return (
@@ -110,20 +120,7 @@ const NewPost: React.FC = () => {
             name="authorId"
             value={authorId}
             onChange={(e) => setAuthorId(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="timestamp"
-            label="Timestamp"
-            name="timestamp"
-            type="datetime-local"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            value={timestamp}
-            onChange={(e) => setTimestamp(e.target.value)}
+            disabled // Deshabilitar el campo para evitar modificaciones
           />
 
           <Button
@@ -133,12 +130,7 @@ const NewPost: React.FC = () => {
             sx={{ mt: 3, mb: 2 }}
           >
             Upload files
-            <input
-              type="file"
-              onChange={handleImageChange}
-              multiple
-              hidden
-            />
+            <input type="file" onChange={handleImageChange} multiple hidden />
           </Button>
 
           {imagePreviews.length > 0 && (
@@ -148,11 +140,18 @@ const NewPost: React.FC = () => {
               </Typography>
               <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                 {imagePreviews.map((preview, index) => (
-                  <Box key={index} sx={{ position: "relative", display: "inline-block" }}>
+                  <Box
+                    key={index}
+                    sx={{ position: "relative", display: "inline-block" }}
+                  >
                     <img
                       src={preview}
                       alt={`Preview ${index + 1}`}
-                      style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        objectFit: "cover",
+                      }}
                     />
                     <IconButton
                       size="small"
@@ -173,7 +172,13 @@ const NewPost: React.FC = () => {
             </Box>
           )}
 
-          <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 3, mb: 2 }}
+          >
             Submit
           </Button>
         </Box>
