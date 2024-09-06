@@ -8,9 +8,11 @@ import {
   Box,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline"; 
+import { logOut } from "../../helpers/logOut";
 
 const NavBar: React.FC = () => {
+  const handleLogOut = logOut(); 
   return (
     <AppBar position="static">
       <Toolbar>
@@ -38,6 +40,9 @@ const NavBar: React.FC = () => {
           </Button>
           <Button color="inherit" component="a" href="/follow">
             Follow
+          </Button>
+          <Button color="error" component='a'  onClick={handleLogOut}>
+            Log Out
           </Button>
         </Box>
       </Toolbar>

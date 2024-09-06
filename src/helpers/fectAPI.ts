@@ -1,5 +1,6 @@
 import { handleRefreshToken } from "../Auth/RefreshToken";
 import { Post } from "../interface/posts";
+import { UserInterface } from "../interface/users";
 
 export const getPosts = async (url: string): Promise<Post[]> => {
   try {
@@ -16,6 +17,21 @@ export const getPosts = async (url: string): Promise<Post[]> => {
     throw error;
   }
 };
+
+export const getUserById = async (url: string): Promise<UserInterface> => {
+  try {
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`)
+    }
+    const data: UserInterface = await response.json()
+    return data
+  } catch (error: unknown) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
 
 
 

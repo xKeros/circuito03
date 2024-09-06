@@ -10,8 +10,9 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
-import { useCookies } from 'react-cookie';
+import { useSelector } from "react-redux";
 import { uploadImages } from "../../helpers/imageUploadHelper";
+import { redirect } from "react-router-dom";
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -19,16 +20,14 @@ const NewPost: React.FC = () => {
   const [authorId, setAuthorId] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [cookies, setCookie, removeCookie] = useCookies(['userId']);
 
-  // Obtener el authorId de las cookies cuando se monta el componente
+  const globalState = useSelector((state) => state.auth);
+
   useEffect(() => {
-    const myCookie = cookies.userId
-    console.log(myCookie)
-    if (myCookie) {
-      setAuthorId(myCookie);
+    if (globalState.userId) {
+      setAuthorId(globalState.userId);
     }
-  }, [cookies.userId]);
+  }, [globalState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +39,7 @@ const NewPost: React.FC = () => {
     const postData = {
       title,
       content,
-      authorId, // Usar el authorId que viene de la cookie
+      authorId,
       timestamp: currentTimestamp,
       images: savedImagePaths,
     };
@@ -56,7 +55,7 @@ const NewPost: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Post created with images:", data);
+        redirect('/')
       } else {
         console.error("Failed to create post");
       }
@@ -81,6 +80,7 @@ const NewPost: React.FC = () => {
       prevPreviews.filter((_, i) => i !== index)
     );
   };
+  console.log(images)
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: 3 }}>

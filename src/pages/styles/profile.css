@@ -1,0 +1,16 @@
+.header {
+    width: 100%; /* Mantiene el header al 100% del ancho */
+    height: 10%; /* Ajusta la altura del header */
+    line-height: 10px; /* Centra verticalmente el contenido */
+    background-color: #ff0000; /* Cambia el color de fondo */
+}
+
+.background {
+    display: block;
+    width: 100%; /* Ocupa el 100% del ancho del contenedor */
+    max-width: 100%; /* Asegura que la imagen no sea más grande que el contenedor */
+    height: auto; /* La altura se ajusta automáticamente para mantener la proporción */
+    margin: 20px auto; /* Añade espacio arriba/abajo y la centra horizontalmente */
+    border-radius: 10px; /* Opcional: bordes redondeados */
+    object-fit: contain; /* Mantiene la imagen dentro del contenedor sin deformarla */
+}

@@ -14,14 +14,15 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Slider from 'react-slick'; // Importar el slider
 
 interface Post {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
-    timestamp: number;
-    image: string[]
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  timestamp: number;
+  images: string[];
 }
 
 interface PostCardProps {
@@ -46,6 +47,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     setExpanded(!expanded);
   };
 
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
+
   return (
     <Card sx={{ maxWidth: 345, marginBottom: 2 }}>
       <CardHeader
@@ -60,14 +69,19 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </IconButton>
         }
         title={post.title}
-        subheader={post.timestamp} // You can replace this with a post date if available
+        subheader={new Date(post.timestamp * 1000).toLocaleDateString()} // Formato de fecha
       />
-      <CardMedia
-        component="img"
-        height="194"
-        image="" // Replace with a post image if available
-        alt={post.title}
-      />
+      <Slider {...sliderSettings}>
+        {post.images.map((image, index) => (
+          <CardMedia
+            key={index}
+            component="img"
+            height="194"
+            image={image}
+            alt={`Post image ${index + 1}`}
+          />
+        ))}
+      </Slider>
       <CardContent>
         <Typography variant="body2" color="text.secondary">
           {post.content.substring(0, 100)}... {/* Truncate the content */}
